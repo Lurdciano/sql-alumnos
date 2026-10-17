@@ -1,0 +1,41 @@
+# ===== Compilación =====
+target/
+build/in/
+*.jar
+*.class
+dependency-reduced-pom.xml
+
+# El jar del Maven Wrapper sí se versiona (hace falta para compilar)
+!.mvn/wrapper/maven-wrapper.jar
+
+# ===== Empaquetado =====
+# El ejecutable y el runtime de Java no van al repositorio
+# (se generan con build.bat y pesan más de 100 MB)
+dist/
+custom-runtime/
+*.exe
+*.ico.bak
+
+# ===== Datos del usuario =====
+# Son datos personales: consignas, historial y preferencias
+data/
+logs/
+*.log
+
+# ===== Configuración local =====
+# Puede contener usuario y contraseña de MySQL
+config.properties
+
+# ===== Node (solo se usa para generar el ícono) =====
+node_modules/
+
+# ===== Editores y sistema =====
+.idea/
+.vscode/
+*.iml
+.settings/
+.classpath
+.project
+Thumbs.db
+desktop.ini
+.DS_Store

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Alumnos</title>
+
+    <!-- Logo e ícono de la pestaña -->
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/logo.svg">
+
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="/lib/codemirror/codemirror.min.css">
+    <link rel="stylesheet" href="/lib/codemirror/addon/hint/show-hint.min.css">
+    <link rel="stylesheet" href="/lib/codemirror/theme/material-darker.min.css" id="cm-theme">
+
+    <!-- App CSS -->
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <span class="logo">
+                <img class="logo-imagen" src="/logo.svg" alt="" width="22" height="22">
+                <span class="logo-texto">SQL Alumnos</span>
+            </span>
+            <span id="connection-status" class="status-badge inactive">
+                <span class="status-dot"></span>
+                <span class="status-text">Desconectado</span>
+            </span>
+        </div>
+        <div class="header-right">
+            <select id="db-selector" class="db-selector" disabled title="Base de datos con la que se trabaja">
+                <option value="">Seleccionar base...</option>
+            </select>
+            <button id="btn-paneles" class="btn btn-icon" title="Mostrar u ocultar los paneles (F8)">
+                <span class="icono icono-md icono-panel"></span>
+            </button>
+            <button id="btn-theme" class="btn btn-icon" title="Cambiar tema">
+                <span class="icono icono-md icono-luna" id="icono-tema"></span>
+            </button>
+            <button id="btn-close" class="btn btn-icon btn-danger" title="Cerrar programa">
+                <span class="icono icono-md icono-cerrar"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Layout principal: ocupa exactamente la ventana, sin scroll global -->
+    <div class="main-layout">
+        <!-- Panel izquierdo: Explorador y Consignas (cada uno con su propio scroll) -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Explorador -->
+            <section class="panel panel-explorer" id="panel-explorer">
+                <div class="panel-header" data-panel-toggle="panel-explorer" title="Plegar o desplegar (F8)">
+                    <h3>Explorador</h3>
+                    <div class="panel-header-actions">
+                        <button class="btn btn-small" id="btn-reload-explorer" title="Refrescar bases">
+                            <span class="icono icono-refrescar"></span>
+                        </button>
+                        <button class="btn btn-small panel-toggle" title="Ocultar el explorador (F8)">
+                            <span class="icono icono-flecha"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body" id="explorer-tree">
+                    <div class="explorer-loading">Cargando…</div>
+                </div>
+            </section>
+
+            <!-- Divisor redimensionable entre Explorador y Consignas -->
+            <div class="resizer resizer-row" id="resizer-sidebar"></div>
+
+            <!-- Consignas -->
+            <section class="panel panel-consignas" id="panel-consignas">
+                <div class="panel-header" data-panel-toggle="panel-consignas" title="Plegar o desplegar (F7)">
+                    <h3>Consignas</h3>
+                    <div class="panel-header-actions">
+                        <div class="consignas-actions">
+                            <select id="consignas-conjunto-selector" class="consignas-selector" title="Seleccionar conjunto"></select>
+                            <button class="btn btn-small" id="btn-nuevo-conjunto" title="Nuevo conjunto">+</button>
+                        </div>
+                        <button class="btn btn-small panel-toggle" title="Ocultar las consignas (F7)">
+                            <span class="icono icono-flecha"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body panel-body-consignas">
+                    <div class="consignas-progreso" id="consignas-progreso">
+                        <span id="progreso-texto">0/0</span>
+                        <div class="progreso-barra">
+                            <div class="progreso-relleno" id="progreso-relleno"></div>
+                        </div>
+                    </div>
+                    <div class="consignas-toolbar">
+                        <button class="btn btn-small" id="btn-agregar-consigna" title="Agregar consigna">+ Agregar</button>
+                        <button class="btn btn-small" id="btn-pegar-consignas" title="Pegar múltiples consignas">Pegar</button>
+                        <button class="btn btn-small" id="btn-desmarcar-todas" title="Desmarcar todas">Desmarcar</button>
+                    </div>
+                    <div class="consignas-lista" id="consignas-lista">
+                        <!-- Las consignas se generan dinámicamente -->
+                    </div>
+                </div>
+            </section>
+        </aside>
+
+        <!-- Divisor redimensionable del panel izquierdo -->
+        <div class="resizer resizer-col" id="resizer-sidebar-width"></div>
+
+        <!-- Centro: pestañas, editor y resultados (cada zona con su propio scroll) -->
+        <main class="main-content">
+            <!-- Pestañas de consulta -->
+            <div class="tabs-container" id="tabs-container">
+                <div class="tabs" id="tabs">
+                    <!-- Las pestañas se generan dinámicamente -->
+                </div>
+                <button class="btn btn-new-tab" id="btn-new-tab" title="Nueva pestaña">+</button>
+            </div>
+
+            <!-- Editor -->
+            <div class="editor-container" id="editor-container">
+                <div class="editor-wrapper">
+                    <textarea id="sql-editor"></textarea>
+                </div>
+                <div class="editor-toolbar">
+                    <button id="btn-execute" class="btn btn-primary" title="Ejecutar (Ctrl+Enter)">
+                        <span class="icono icono-play"></span> Ejecutar
+                    </button>
+                    <button id="btn-clear" class="btn" title="Limpiar editor">
+                        <span class="icono icono-papelera"></span> Limpiar
+                    </button>
+                    <span class="editor-hint">Ctrl+Enter para ejecutar</span>
+                </div>
+            </div>
+
+            <!-- Divisor redimensionable entre editor y resultados -->
+            <div class="resizer resizer-row" id="resizer-editor"></div>
+
+            <!-- Resultados -->
+            <div class="results-container" id="results-container">
+                <div class="results-placeholder">
+                    Ejecuta una consulta para ver los resultados
+                </div>
+            </div>
+        </main>
+
+        <!-- Divisor redimensionable del panel de historial -->
+        <div class="resizer resizer-col" id="resizer-historial"></div>
+
+        <!-- Derecha: historial y favoritos -->
+        <aside class="panel panel-historial" id="panel-historial">
+            <div class="panel-header" data-panel-toggle="panel-historial" title="Plegar o desplegar (F10)">
+                <h3>Historial</h3>
+                <div class="panel-header-actions">
+                    <button class="btn btn-small" id="btn-limpiar-historial" title="Limpiar historial">
+                        <span class="icono icono-papelera"></span>
+                    </button>
+                    <button class="btn btn-small panel-toggle" title="Ocultar el historial (F10)">
+                        <span class="icono icono-flecha"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="panel-body panel-body-historial">
+                <div class="historial-tabs">
+                    <button class="historial-tab active" data-tab="historial">Historial</button>
+                    <button class="historial-tab" data-tab="favoritos">Favoritos</button>
+                </div>
+                <div class="historial-lista" id="historial-lista">
+                    <!-- Las entradas se generan dinámicamente -->
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Botones para volver a mostrar los paneles ocultos -->
+    <button class="btn-borde btn-borde-izq oculto" id="btn-mostrar-sidebar" title="Mostrar los paneles (F8)">
+        <span class="icono icono-md icono-panel"></span>
+    </button>
+    <button class="btn-borde btn-borde-der oculto" id="btn-mostrar-historial" title="Mostrar el historial (F10)">
+        <span class="icono icono-md icono-historial"></span>
+    </button>
+
+    <!-- Modal propio (reemplaza a los alert/confirm/prompt del navegador) -->
+    <div class="modal-capa oculto" id="modal-capa">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+            <div class="modal-titulo" id="modal-titulo"></div>
+            <div class="modal-mensaje oculto" id="modal-mensaje"></div>
+            <input type="text" class="modal-input" id="modal-input" autocomplete="off">
+            <textarea class="modal-input modal-area" id="modal-area" rows="7" autocomplete="off"></textarea>
+            <div class="modal-acciones">
+                <button class="btn" id="modal-cancelar">Cancelar</button>
+                <button class="btn btn-primary" id="modal-aceptar">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avisos rápidos (no bloquean) -->
+    <div class="avisos" id="avisos"></div>
+
+    <!-- Script de CodeMirror -->
+    <script src="/lib/codemirror/codemirror.min.js"></script>
+    <script src="/lib/codemirror/mode/sql/sql.min.js"></script>
+    <script src="/lib/codemirror/addon/edit/closebrackets.min.js"></script>
+    <script src="/lib/codemirror/addon/edit/matchbrackets.min.js"></script>
+    <script src="/lib/codemirror/addon/hint/show-hint.min.js"></script>
+    <script src="/lib/codemirror/addon/hint/sql-hint.min.js"></script>
+
+    <!-- App JS -->
+    <script src="/js/app.js"></script>
+</body>
+</html>
