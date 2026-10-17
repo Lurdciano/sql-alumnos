@@ -25,9 +25,14 @@ logs/
 # ===== Configuración local =====
 # Puede contener usuario y contraseña de MySQL
 config.properties
+AGENTS
 
 # ===== Node (solo se usa para generar el ícono) =====
 node_modules/
+
+# ===== Documentación interna de trabajo =====
+# No es parte del proyecto que se publica
+AGENTS.md
 
 # ===== Editores y sistema =====
 .idea/
